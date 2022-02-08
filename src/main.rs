@@ -1,9 +1,18 @@
+use std::env;
+use std::io::Write;
+use std::process::{Command, Stdio};
+
+type TResult<T> = Result<T, Box<dyn std::error::Error>>;
+
 fn main() {
+    run().unwrap_or_else(|e| exit::exit_with_error(e))
+}
+
+fn run() -> TResult<()> {
     let opts = cli::opts();
     let args = cli::args();
 
-    let matches =
-        opts.parse(args.args()).unwrap_or_else(|e| exit::exit_with_error(e));
+    let matches = opts.parse(args.args())?;
 
     if matches.opt_present("h") {
         exit::exit_with_help(args.program(), opts);
@@ -14,7 +23,62 @@ fn main() {
         false => &matches.free[0],
     };
 
-    println!("{}", mode);
+    let dir = mode;
+    let _ = navigate(dir)?;
+
+    let files = list_files()?;
+    let file = user_select(files)?;
+    let path = format!("{}/{}", dir, file);
+
+    let _ = Command::new("/bin/xdg-open").arg(path).spawn()?;
+
+    Ok(())
+}
+
+fn navigate(dir: &str) -> TResult<std::path::PathBuf> {
+    env::set_current_dir(dir).map_err(|e| format!("{} - {}", dir, e))?;
+    env::current_dir().map_err(|e| e.into())
+}
+
+fn user_select(list: String) -> TResult<String> {
+    let mut finder = Command::new("dmenu")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()?;
+
+    let mut stdin = finder.stdin.take().expect("Failed to open stdin");
+    std::thread::spawn(move || {
+        stdin.write_all(list.as_bytes()).expect("Failed to write to stdin");
+    });
+
+    Ok(finder
+        .wait_with_output()?
+        .stdout
+        .into_iter()
+        .map(|c| c as char)
+        .collect())
+}
+
+fn list_files() -> TResult<String> {
+    let mut out = String::new();
+    let files = exec(r"ls -1")?;
+
+    for file in files.lines() {
+        out.push_str(&exec(&format!("find {:?} -type f", file))?);
+    }
+
+    Ok(out)
+}
+
+fn exec(command: &str) -> TResult<String> {
+    Ok(Command::new("sh")
+        .arg("-c")
+        .arg(command)
+        .output()?
+        .stdout
+        .into_iter()
+        .map(|c| c as char)
+        .collect::<String>())
 }
 
 mod cli {
@@ -56,6 +120,8 @@ mod cli {
 }
 
 mod exit {
+    use std::error::Error;
+
     use crate::cli;
 
     pub fn exit_with_help(program: &str, opts: getopts::Options) -> ! {
@@ -63,7 +129,7 @@ mod exit {
         std::process::exit(0);
     }
 
-    pub fn exit_with_error(error: impl std::error::Error) -> ! {
+    pub fn exit_with_error(error: Box<dyn Error>) -> ! {
         eprintln!("{}", error);
         std::process::exit(1);
     }
