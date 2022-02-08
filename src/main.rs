@@ -1,21 +1,20 @@
 fn main() {
     let opts = cli::opts();
-    let (program, args) = cli::args();
+    let args = cli::args();
 
-    let matches = opts
-        .parse(&args)
-        .unwrap_or_else(|e| exit::exit_with_error(&e.to_string(), 1));
+    let matches =
+        opts.parse(args.args()).unwrap_or_else(|e| exit::exit_with_error(e));
 
     if matches.opt_present("h") {
-        exit::exit_with_help(&program, opts);
+        exit::exit_with_help(args.program(), opts);
     }
 
     let mode: &str = match matches.free.is_empty() {
-        true => exit::exit_with_help(&program, opts),
+        true => exit::exit_with_help(args.program(), opts),
         false => &matches.free[0],
     };
 
-    println!("{mode}");
+    println!("{}", mode);
 }
 
 mod cli {
@@ -29,10 +28,25 @@ mod cli {
         opts
     }
 
-    pub fn args() -> (String, Vec<String>) {
+    pub struct Args {
+        program: String,
+        args:    Vec<String>,
+    }
+
+    impl Args {
+        pub fn program(&self) -> &str {
+            &self.program
+        }
+        pub fn args(&self) -> &[String] {
+            &self.args
+        }
+    }
+
+    pub fn args() -> Args {
         let mut args = env::args();
-        let program = args.next().unwrap();
-        (program, args.collect())
+        let program: String = args.next().unwrap();
+        let args: Vec<String> = args.collect();
+        Args { program, args }
     }
 
     pub fn usage(program: &str, opts: getopts::Options) -> String {
@@ -49,8 +63,8 @@ mod exit {
         std::process::exit(0);
     }
 
-    pub fn exit_with_error(error: &str, code: i32) -> ! {
+    pub fn exit_with_error(error: impl std::error::Error) -> ! {
         eprintln!("{}", error);
-        std::process::exit(code);
+        std::process::exit(1);
     }
 }
