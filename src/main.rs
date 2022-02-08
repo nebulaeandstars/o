@@ -105,8 +105,14 @@ mod cmd {
             .map(|c| c as char)
             .collect();
 
-        let index = selection.split(" ").next().unwrap().parse::<usize>()?;
-        Ok(&list[index])
+        if !selection.is_empty() {
+            let index =
+                selection.split(" ").next().unwrap().parse::<usize>()?;
+            Ok(&list[index])
+        }
+        else {
+            Err("".into())
+        }
     }
 
     pub fn find_files(
