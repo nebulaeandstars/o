@@ -1,6 +1,4 @@
-use std::env;
-use std::io::Write;
-use std::process::{Command, Stdio};
+use std::process::Command;
 
 type TResult<T> = Result<T, Box<dyn std::error::Error>>;
 
@@ -24,79 +22,17 @@ fn run() -> TResult<()> {
     };
 
     let dir = mode;
-    let _ = navigate(dir)?;
+    let _ = cmd::navigate(dir)?;
 
-    let files = list_files()?;
-    let file = user_select(files)?;
-    let path = format!("{}/{}", dir, file);
+    let files = cmd::list_files()?;
+    let file = cmd::user_select(files)?;
+    let path = format!("{}", file);
 
     if !file.trim().is_empty() {
         Command::new("xdg-open").arg(path).spawn()?;
     }
 
     Ok(())
-}
-
-fn navigate(dir: &str) -> TResult<std::path::PathBuf> {
-    env::set_current_dir(dir).map_err(|e| format!("{} - {}", dir, e))?;
-    env::current_dir().map_err(|e| e.into())
-}
-
-fn user_select(list: String) -> TResult<String> {
-    let mut finder = finder()?;
-    let mut stdin = finder.stdin.take().expect("Failed to open stdin");
-    std::thread::spawn(move || {
-        stdin.write_all(list.as_bytes()).expect("Failed to write to stdin");
-    });
-
-    Ok(finder
-        .wait_with_output()?
-        .stdout
-        .into_iter()
-        .map(|c| c as char)
-        .collect())
-}
-
-fn list_files() -> TResult<String> {
-    let mut out = String::new();
-    let files = exec(r"ls -1")?;
-
-    for file in files.lines() {
-        out.push_str(&exec(&format!("find {:?} -type f", file))?);
-    }
-
-    Ok(out)
-}
-
-fn exec(command: &str) -> TResult<String> {
-    Ok(Command::new("sh")
-        .arg("-c")
-        .arg(command)
-        .output()?
-        .stdout
-        .into_iter()
-        .map(|c| c as char)
-        .collect::<String>())
-}
-
-fn finder() -> TResult<std::process::Child> {
-    // If in a tty, try to use fzf.
-    if atty::is(atty::Stream::Stdout) {
-        let result = Command::new("fzf")
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .spawn();
-
-        if let Ok(child) = result {
-            return Ok(child);
-        }
-    }
-
-    // If not in a tty, or if fzf didn't work, try to use dmenu.
-    Ok(Command::new("dmenu")
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .spawn()?)
 }
 
 mod cli {
@@ -133,7 +69,77 @@ mod cli {
 
     pub fn usage(program: &str, opts: getopts::Options) -> String {
         let brief = format!("Usage: {} FILE [options]", program);
-        format!("{}", opts.usage(&brief))
+        opts.usage(&brief)
+    }
+}
+
+mod cmd {
+    use std::env;
+    use std::io::Write;
+    use std::process::{Command, Stdio};
+
+    use crate::TResult;
+
+    pub fn navigate(dir: &str) -> TResult<std::path::PathBuf> {
+        env::set_current_dir(dir).map_err(|e| format!("{} - {}", dir, e))?;
+        env::current_dir().map_err(|e| e.into())
+    }
+
+    pub fn user_select(list: String) -> TResult<String> {
+        let mut finder = finder()?;
+        let mut stdin = finder.stdin.take().expect("Failed to open stdin");
+        std::thread::spawn(move || {
+            stdin.write_all(list.as_bytes()).expect("Failed to write to stdin");
+        });
+
+        Ok(finder
+            .wait_with_output()?
+            .stdout
+            .into_iter()
+            .map(|c| c as char)
+            .collect())
+    }
+
+    pub fn list_files() -> TResult<String> {
+        let mut out = String::new();
+        let files = exec(r"ls -1")?;
+
+        for file in files.lines() {
+            out.push_str(&exec(&format!("find {:?} -type f", file))?);
+        }
+
+        Ok(out)
+    }
+
+    pub fn exec(command: &str) -> TResult<String> {
+        Ok(Command::new("sh")
+            .arg("-c")
+            .arg(command)
+            .output()?
+            .stdout
+            .into_iter()
+            .map(|c| c as char)
+            .collect::<String>())
+    }
+
+    pub fn finder() -> TResult<std::process::Child> {
+        // If in a tty, try to use fzf.
+        if atty::is(atty::Stream::Stdout) {
+            let result = Command::new("fzf")
+                .stdin(Stdio::piped())
+                .stdout(Stdio::piped())
+                .spawn();
+
+            if let Ok(child) = result {
+                return Ok(child);
+            }
+        }
+
+        // If not in a tty, or if fzf didn't work, try to use dmenu.
+        Ok(Command::new("dmenu")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn()?)
     }
 }
 
@@ -143,7 +149,7 @@ mod exit {
     use crate::cli;
 
     pub fn exit_with_help(program: &str, opts: getopts::Options) -> ! {
-        println!("{}", cli::usage(&program, opts));
+        println!("{}", cli::usage(program, opts));
         std::process::exit(0);
     }
 

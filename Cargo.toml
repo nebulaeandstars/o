@@ -17,3 +17,6 @@ panic = "abort"
 [dependencies]
 getopts = "0.2"
 atty = "0.2"
+dirs = "4.0"
+serde_yaml = "0.8"
+serde= "1.0"
