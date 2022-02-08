@@ -21,11 +21,11 @@ fn run() -> TResult<()> {
         false => &matches.free[0],
     };
 
-    let dir = mode;
-    let _ = cmd::navigate(dir)?;
+    let dirs = &["~/docs/calibre/", "~/docs/guides/rust"];
+    let filetypes = &[".pdf", ".jpg"];
+    let files = cmd::find_files(dirs, filetypes)?;
 
-    let files = cmd::list_files()?;
-    let file = cmd::user_select(files)?;
+    let file = cmd::user_select(&files)?;
     let path = format!("{}", file);
 
     if !file.trim().is_empty() {
@@ -74,40 +74,56 @@ mod cli {
 }
 
 mod cmd {
-    use std::env;
     use std::io::Write;
+    use std::path::PathBuf;
     use std::process::{Command, Stdio};
 
     use crate::TResult;
 
-    pub fn navigate(dir: &str) -> TResult<std::path::PathBuf> {
-        env::set_current_dir(dir).map_err(|e| format!("{} - {}", dir, e))?;
-        env::current_dir().map_err(|e| e.into())
-    }
-
-    pub fn user_select(list: String) -> TResult<String> {
+    pub fn user_select<'a>(list: &'a [String]) -> TResult<&'a str> {
         let mut finder = finder()?;
         let mut stdin = finder.stdin.take().expect("Failed to open stdin");
+
+        let query = list
+            .iter()
+            .map(|path| PathBuf::from(path).file_name().unwrap().to_owned())
+            .enumerate()
+            .map(|(i, filename)| format!("{} {:#?}", i, filename))
+            .collect::<Vec<_>>()
+            .join("\n");
+
         std::thread::spawn(move || {
-            stdin.write_all(list.as_bytes()).expect("Failed to write to stdin");
+            stdin
+                .write_all(query.as_bytes())
+                .expect("Failed to write to stdin");
         });
 
-        Ok(finder
+        let selection: String = finder
             .wait_with_output()?
             .stdout
             .into_iter()
             .map(|c| c as char)
-            .collect())
+            .collect();
+
+        let index = selection.split(" ").next().unwrap().parse::<usize>()?;
+        Ok(&list[index])
     }
 
-    pub fn list_files() -> TResult<String> {
-        let mut out = String::new();
-        let files = exec(r"ls -1")?;
+    pub fn find_files(
+        dirs: &[&str], filetypes: &[&str],
+    ) -> TResult<Vec<String>> {
+        let dirs_query = dirs.join(" ");
+        let mut filetypes_query = String::new();
 
-        for file in files.lines() {
-            out.push_str(&exec(&format!("find {:?} -type f", file))?);
-        }
+        filetypes_query.push_str(r"\( ");
+        filetypes_query
+            .extend(filetypes.iter().map(|s| format!("-name '*{}' -o ", s)));
+        filetypes_query.push_str(r"-name '' \)");
 
+        let query = format!("find {} {} -type f", dirs_query, filetypes_query);
+
+        let files = exec(&query)?;
+        let out = files.lines().map(|line| line.to_owned()).collect();
         Ok(out)
     }
 
