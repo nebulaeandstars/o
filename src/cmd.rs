@@ -12,6 +12,7 @@ pub fn user_select<'a>(list: &'a [String]) -> TResult<&'a str> {
         .iter()
         .map(|path| PathBuf::from(path).file_name().unwrap().to_owned())
         .enumerate()
+        .rev()
         .map(|(i, filename)| format!("{} {:#?}", i, filename))
         .collect::<Vec<_>>()
         .join("\n");
@@ -36,7 +37,9 @@ pub fn user_select<'a>(list: &'a [String]) -> TResult<&'a str> {
     }
 }
 
-pub fn find_files(dirs: &[&str], filetypes: &[&str]) -> TResult<Vec<String>> {
+pub fn find_files(
+    dirs: &[String], filetypes: &[String],
+) -> TResult<Vec<String>> {
     let dirs_query = dirs.join(" ");
     let mut filetypes_query = String::new();
 
