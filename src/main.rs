@@ -43,11 +43,7 @@ fn navigate(dir: &str) -> TResult<std::path::PathBuf> {
 }
 
 fn user_select(list: String) -> TResult<String> {
-    let mut finder = Command::new(finder())
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .spawn()?;
-
+    let mut finder = finder()?;
     let mut stdin = finder.stdin.take().expect("Failed to open stdin");
     std::thread::spawn(move || {
         stdin.write_all(list.as_bytes()).expect("Failed to write to stdin");
@@ -83,13 +79,24 @@ fn exec(command: &str) -> TResult<String> {
         .collect::<String>())
 }
 
-fn finder() -> &'static str {
+fn finder() -> TResult<std::process::Child> {
+    // If in a tty, try to use fzf.
     if atty::is(atty::Stream::Stdout) {
-        "fzf"
+        let result = Command::new("fzf")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn();
+
+        if let Ok(child) = result {
+            return Ok(child);
+        }
     }
-    else {
-        "dmenu"
-    }
+
+    // If not in a tty, or if fzf didn't work, try to use dmenu.
+    Ok(Command::new("dmenu")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()?)
 }
 
 mod cli {
