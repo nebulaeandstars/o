@@ -30,7 +30,9 @@ fn run() -> TResult<()> {
     let file = user_select(files)?;
     let path = format!("{}/{}", dir, file);
 
-    let _ = Command::new("/bin/xdg-open").arg(path).spawn()?;
+    if !file.trim().is_empty() {
+        Command::new("xdg-open").arg(path).spawn()?;
+    }
 
     Ok(())
 }
@@ -41,7 +43,7 @@ fn navigate(dir: &str) -> TResult<std::path::PathBuf> {
 }
 
 fn user_select(list: String) -> TResult<String> {
-    let mut finder = Command::new("dmenu")
+    let mut finder = Command::new(finder())
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()?;
@@ -79,6 +81,15 @@ fn exec(command: &str) -> TResult<String> {
         .into_iter()
         .map(|c| c as char)
         .collect::<String>())
+}
+
+fn finder() -> &'static str {
+    if atty::is(atty::Stream::Stdout) {
+        "fzf"
+    }
+    else {
+        "dmenu"
+    }
 }
 
 mod cli {
