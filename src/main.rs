@@ -39,21 +39,26 @@ fn run() -> TResult<()> {
     let file = cmd::user_select(&files)?;
     let path = format!("{}", file);
 
+    let command = match &category.command {
+        Some(command) => format!("{} {}", command, path),
+        None => format!("xdg-open {}", path),
+    };
+
+    let crash = || {
+        exit::exit_with_error(
+            format!("error executing command: {}", &command).into(),
+        )
+    };
+
     if !file.trim().is_empty() {
-        if let Some(command) = &category.command {
-            Command::new("sh")
-                .arg("-c")
-                .arg(format!("{} {}", command, path))
-                .spawn()?
-                .wait()
-                .unwrap_or_else(|_| {
-                    exit::exit_with_error(
-                        format!("error executing command: {}", command).into(),
-                    )
-                });
-        }
-        else {
-            Command::new("xdg-open").arg(path).spawn()?;
+        let mut child = Command::new("sh")
+            .arg("-c")
+            .arg(&command)
+            .spawn()
+            .unwrap_or_else(|_| crash());
+
+        if category.wait {
+            child.wait()?;
         }
     }
 

@@ -30,4 +30,5 @@ pub struct Category {
     pub dirs:      Vec<String>,
     pub filetypes: Vec<String>,
     pub command:   Option<String>,
+    pub wait:      bool,
 }
