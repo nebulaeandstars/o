@@ -41,13 +41,16 @@ fn run() -> TResult<()> {
 
     if !file.trim().is_empty() {
         if let Some(command) = &category.command {
-            Command::new(command).arg(path).spawn()?.wait().unwrap_or_else(
-                |_| {
+            Command::new("sh")
+                .arg("-c")
+                .arg(format!("{} {}", command, path))
+                .spawn()?
+                .wait()
+                .unwrap_or_else(|_| {
                     exit::exit_with_error(
                         format!("error executing command: {}", command).into(),
                     )
-                },
-            );
+                });
         }
         else {
             Command::new("xdg-open").arg(path).spawn()?;
