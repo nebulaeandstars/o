@@ -40,7 +40,18 @@ fn run() -> TResult<()> {
     let path = format!("{}", file);
 
     if !file.trim().is_empty() {
-        Command::new("xdg-open").arg(path).spawn()?;
+        if let Some(command) = &category.command {
+            Command::new(command).arg(path).spawn()?.wait().unwrap_or_else(
+                |_| {
+                    exit::exit_with_error(
+                        format!("error executing command: {}", command).into(),
+                    )
+                },
+            );
+        }
+        else {
+            Command::new("xdg-open").arg(path).spawn()?;
+        }
     }
 
     Ok(())
