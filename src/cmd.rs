@@ -83,6 +83,8 @@ pub fn finder() -> TResult<std::process::Child> {
 
     // If not in a tty, or if fzf didn't work, try to use dmenu.
     Ok(Command::new("dmenu")
+        .arg("-l")
+        .arg("20")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()?)
