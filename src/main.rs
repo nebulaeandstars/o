@@ -16,7 +16,7 @@ fn run() -> TResult<()> {
     let args = cli::args();
     let matches = opts.parse(args.args())?;
 
-    let config = config::read_config()?;
+    let mut config = config::read_config()?;
 
     if matches.opt_present("h") {
         exit::exit_with_help(args.program(), opts);
@@ -28,11 +28,15 @@ fn run() -> TResult<()> {
     };
 
     let category =
-        config.categories.get(chosen_category).unwrap_or_else(|| {
+        config.categories.get_mut(chosen_category).unwrap_or_else(|| {
             exit::exit_with_error(
                 format!("unknown category: {}", chosen_category).into(),
             )
         });
+
+    if category.filetypes.is_empty() {
+        category.filetypes.push(String::from("*"));
+    }
 
     let mut files = cmd::find_files(
         &category.dirs,

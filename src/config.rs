@@ -12,7 +12,8 @@ use crate::TResult;
 pub fn read_config() -> TResult<Config> {
     let config_path = config_file_path();
     let yaml = fs::read_to_string(config_path)?;
-    Ok(serde_yaml::from_str(&yaml)?)
+    let config = serde_yaml::from_str(&yaml)?;
+    Ok(config)
 }
 
 /// Find the path to the config file.
@@ -34,7 +35,9 @@ pub struct Config {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Category {
-    pub dirs:      Vec<String>,
+    pub dirs: Vec<String>,
+
+    #[serde(default)]
     pub filetypes: Vec<String>,
 
     #[serde(default)]

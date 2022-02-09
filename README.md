@@ -33,7 +33,8 @@ Configuration is fairly straightforward:
 categories:
   # usage:
   #   dirs: where should o look for files?
-  #   filetypes: which filetypes should be included?
+  #   filetypes: which filetypes should be included? (default: ["*"])
+  #   ignored: which patterns should be ignored? (default: [])
   #   command: open files with which command? (default: xdg-open)
   #   wait: wait for the command to finish? (default: false)
 
@@ -41,6 +42,7 @@ categories:
   images:
     dirs: ["~/Images/"]
     filetypes: [".jpg", ".png"]
+    ignored: ["*/screenshots/*"]
 
   # gui example (view pdfs using zathura)
   docs:
@@ -51,7 +53,6 @@ categories:
   # tty example (edit local files using nvim)
   edit:
     dirs: ["."]
-    filetypes: ["*"]
     command: "nvim"
     wait: true # nvim runs in the terminal, so we need to wait
 ```

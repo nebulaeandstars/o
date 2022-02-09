@@ -48,8 +48,8 @@ pub fn find_files(
     // add file extensions to the query
     filetypes_query.push_str(r"\( ");
     filetypes_query
-        .extend(filetypes.iter().map(|s| format!("-path '*{}' -o ", s)));
-    filetypes_query.push_str(r"-path '' \)");
+        .extend(filetypes.iter().map(|s| format!("-name '*{}' -o ", s)));
+    filetypes_query.push_str(r"-name '' \)");
 
     // add ignored patterns to the query
     filetypes_query
