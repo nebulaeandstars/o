@@ -6,6 +6,7 @@ use std::path::PathBuf;
 
 use serde::Deserialize;
 
+use crate::category::Category;
 use crate::TResult;
 
 /// Find and deserialize the config file.
@@ -31,21 +32,4 @@ fn config_file_path() -> PathBuf {
 #[derive(Clone, Debug, Deserialize)]
 pub struct Config {
     pub categories: HashMap<String, Category>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct Category {
-    pub dirs: Vec<String>,
-
-    #[serde(default)]
-    pub filetypes: Vec<String>,
-
-    #[serde(default)]
-    pub ignored: Vec<String>,
-
-    #[serde(alias = "open-with")]
-    pub command: Option<String>,
-
-    #[serde(default)]
-    pub wait: bool,
 }

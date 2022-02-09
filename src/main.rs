@@ -1,3 +1,4 @@
+mod category;
 mod cli;
 mod cmd;
 mod config;
@@ -38,11 +39,7 @@ fn run() -> TResult<()> {
         category.filetypes.push(String::from("*"));
     }
 
-    let mut files = cmd::find_files(
-        &category.dirs,
-        &category.ignored,
-        &category.filetypes,
-    )?;
+    let mut files = category.matches()?;
     if files.is_empty() {
         exit::exit_with_error("no files found".into());
     }
@@ -66,7 +63,9 @@ fn run() -> TResult<()> {
     };
 
     if !file.is_empty() {
-        println!("{}", command);
+        if atty::is(atty::Stream::Stdout) {
+            println!("{}", command);
+        }
 
         let mut child = Command::new("sh")
             .arg("-c")

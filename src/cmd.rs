@@ -39,29 +39,6 @@ pub fn user_select<'a>(list: &'a [String]) -> TResult<&'a str> {
     }
 }
 
-pub fn find_files(
-    dirs: &[String], ignored: &[String], filetypes: &[String],
-) -> TResult<Vec<String>> {
-    let dirs_query = dirs.join(" ");
-    let mut filetypes_query = String::new();
-
-    // add file extensions to the query
-    filetypes_query.push_str(r"\( ");
-    filetypes_query
-        .extend(filetypes.iter().map(|s| format!("-name '*{}' -o ", s)));
-    filetypes_query.push_str(r"-name '' \)");
-
-    // add ignored patterns to the query
-    filetypes_query
-        .extend(ignored.iter().map(|s| format!(" ! -path '*{}'", s)));
-
-    let query = format!("find {} {} -type f", dirs_query, filetypes_query);
-
-    let files = exec(&query)?;
-    let out = files.lines().map(|line| line.to_owned()).collect();
-    Ok(out)
-}
-
 pub fn exec(command: &str) -> TResult<String> {
     Ok(Command::new("sh")
         .arg("-c")
