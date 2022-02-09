@@ -12,7 +12,9 @@ subcommands are user-defined in `config.yml`.
 
 To find and open an image using the below configuration, simply run:
 
-`o images`
+```bash
+$ o images
+```
 
 If you're currently in a terminal or tty, this will pull up `fzf` with all files
 defined by the `images` category. If running outside of a tty (eg. directly from
@@ -27,24 +29,29 @@ Configuration is very straightforward:
 
 # categories are user-defined subcommands
 categories:
-  images:
-    dirs: ["~/Images/"]            # where should o look for files?
-    filetypes: [".jpg", ".png"] # which filetypes should be included?
-    command: "xdg-open"         # open files with what? (default: xdg-open)
-    wait: false                 # should o wait for the command to finish?
+  # usage:
+  #   dirs: where should o look for files?
+  #   filetypes: which filetypes should be included?
+  #   command: open files with which command? (default: xdg-open)
+  #   wait: wait for the command to finish? (default: false)
 
-  # example using a gui program
+  # basic example (view images using xdg-open)
+  images:
+    dirs: ["~/Images/"]
+    filetypes: [".jpg", ".png"]
+
+  # gui example (view pdfs using zathura)
   docs:
     dirs: ["~/Documents/", "~/Downloads"]
-    filetypes: [".pdf"]
-    wait: false
+    filetypes: [".jpg", ".png"]
+    command: "zathura"
 
-  # example using a tty program
+  # tty example (edit local .rs and .toml files using nvim)
   scripts:
-    dirs: ["~/.local/scripts/"]
-    filetypes: ["*"]
+    dirs: ["."]
+    filetypes: [".rs", ".toml"]
     command: "nvim"
-    wait: true
+    wait: true # nvim runs in the terminal, so we need to wait
 ```
 
 ## Development
