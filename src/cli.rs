@@ -1,3 +1,5 @@
+//! User-driven IO.
+
 use std::env;
 
 pub fn opts() -> getopts::Options {
