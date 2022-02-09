@@ -1,9 +1,10 @@
 [package]
 name = "o"
 version = "0.1.0"
+authors = ["Laura Powles <laura@laurapowles.com>"]
 edition = "2021"
 
-authors = ["Laura Powles <laura@laurapowles.com>"]
+license-file = "LICENSE"
 description = "Configurable file finder and opener"
 repository = "https://github.com/nebulaeandstars/o"
 

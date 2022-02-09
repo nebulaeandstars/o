@@ -3,8 +3,8 @@
 o is a small, UNIX-friendly file finder and opener.
 
 It works with [fzf](https://github.com/junegunn/fzf) (in the terminal) and
-[dmenu](https://tools.suckless.org/dmenu/) (elsewhere) to provide easy-access to
-commonly used files.
+[dmenu](https://tools.suckless.org/dmenu/) (elsewhere) to provide easy access to
+commonly-used files.
 
 ## Usage
 
