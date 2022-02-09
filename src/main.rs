@@ -41,7 +41,7 @@ fn run() -> TResult<()> {
 
     let command = match &category.command {
         Some(command) => format!("{} {}", command, path),
-        None => format!("xdg-open {}", path),
+        None => format!("xdg-open '{}'", path),
     };
 
     let crash = || {

@@ -70,7 +70,7 @@ pub fn exec(command: &str) -> TResult<String> {
 
 pub fn finder() -> TResult<std::process::Child> {
     // If in a tty, try to use fzf.
-    if atty::is(atty::Stream::Stdout) {
+    if atty::is(atty::Stream::Stdin) && atty::is(atty::Stream::Stdout) {
         let result = Command::new("fzf")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
