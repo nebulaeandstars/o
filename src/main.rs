@@ -40,11 +40,12 @@ fn run() -> TResult<()> {
     }
 
     let file = cmd::user_select(&files)?;
+    let file = file.split(" ").collect::<Vec<_>>().join(r"\ ");
     let path = format!("{}", file);
 
     let command = match &category.command {
         Some(command) => format!("{} {}", command, path),
-        None => format!("xdg-open '{}'", path),
+        None => format!("xdg-open {}", path),
     };
 
     let crash = || {
@@ -53,7 +54,7 @@ fn run() -> TResult<()> {
         )
     };
 
-    if !file.trim().is_empty() {
+    if !file.is_empty() {
         let mut child = Command::new("sh")
             .arg("-c")
             .arg(&command)
