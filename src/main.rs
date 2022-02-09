@@ -35,6 +35,9 @@ fn run() -> TResult<()> {
         });
 
     let files = cmd::find_files(&category.dirs, &category.filetypes)?;
+    if files.is_empty() {
+        exit::exit_with_error("no files found".into());
+    }
 
     let file = cmd::user_select(&files)?;
     let path = format!("{}", file);
