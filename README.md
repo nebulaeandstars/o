@@ -1,28 +1,30 @@
 # o
 
-`o` is a small, UNIX-friendly file finder and opener.
+o is a small, UNIX-friendly file finder and opener.
 
-It works with `fzf` (in the terminal) and `dmenu` (elsewhere) to provide
-easy-access to commonly used files.
+It works with [fzf](https://github.com/junegunn/fzf) (in the terminal) and
+[dmenu](https://tools.suckless.org/dmenu/) (elsewhere) to provide easy-access to
+commonly used files.
 
 ## Usage
 
-With `o`, you get to choose how your files are displayed and opened. All
-subcommands are user-defined in `config.yml`.
+With o, you get to choose how your files are displayed and opened. All
+subcommands are user-defined in `$XDG_CONFIG_HOME/config.yml`.
 
 To find and open an image using the below configuration, simply run:
 
-```bash
+```shell
 $ o images
 ```
 
-If you're currently in a terminal or tty, this will pull up `fzf` with all files
-defined by the `images` category. If running outside of a tty (eg. directly from
-`dmenu`), you'll see the same interface but using `dmenu` instead.
+If you're currently in a terminal or tty, this will pull up fzf with all of the
+files in all of the directories listed in the `images` category. If running
+outside of a tty (eg. directly from dmenu), you'll see the same list but piped
+through dmenu instead.
 
 ## Configuration
 
-Configuration is very straightforward:
+Configuration is fairly straightforward:
 
 ```yaml
 # ~/.config/o/config.yml
@@ -43,21 +45,21 @@ categories:
   # gui example (view pdfs using zathura)
   docs:
     dirs: ["~/Documents/", "~/Downloads"]
-    filetypes: [".jpg", ".png"]
+    filetypes: [".pdf"]
     command: "zathura"
 
-  # tty example (edit local .rs and .toml files using nvim)
-  scripts:
+  # tty example (edit local files using nvim)
+  edit:
     dirs: ["."]
-    filetypes: [".rs", ".toml"]
+    filetypes: ["*"]
     command: "nvim"
     wait: true # nvim runs in the terminal, so we need to wait
 ```
 
 ## Development
 
-`o` is in very early development, and there are bound to be many bugs and
-changes over the next few months.
+o is in very early development, and there are bound to be many bugs and changes
+over the next few months.
 
 Planned features are:
 
