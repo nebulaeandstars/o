@@ -34,9 +34,16 @@ fn run() -> TResult<()> {
             )
         });
 
-    let files = cmd::find_files(&category.dirs, &category.filetypes)?;
+    let mut files = cmd::find_files(
+        &category.dirs,
+        &category.ignored,
+        &category.filetypes,
+    )?;
     if files.is_empty() {
         exit::exit_with_error("no files found".into());
+    }
+    else {
+        files.sort();
     }
 
     let file = cmd::user_select(&files)?;
@@ -55,6 +62,8 @@ fn run() -> TResult<()> {
     };
 
     if !file.is_empty() {
+        println!("{}", command);
+
         let mut child = Command::new("sh")
             .arg("-c")
             .arg(&command)

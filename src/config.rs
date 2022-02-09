@@ -37,6 +37,9 @@ pub struct Category {
     pub dirs:      Vec<String>,
     pub filetypes: Vec<String>,
 
+    #[serde(default)]
+    pub ignored: Vec<String>,
+
     #[serde(alias = "open-with")]
     pub command: Option<String>,
 
