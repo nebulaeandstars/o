@@ -73,7 +73,7 @@ fn run() -> TResult<()> {
             .spawn()
             .unwrap_or_else(|_| crash());
 
-        if category.wait {
+        if category.terminal {
             child.wait()?;
         }
     }
