@@ -49,29 +49,10 @@ fn run() -> TResult<()> {
 
     let file = cmd::user_select(&files)?;
     let file = file.split(" ").collect::<Vec<_>>().join(r"\ ");
-    let path = format!("{}", file);
-
-    let command = match &category.command {
-        Some(command) => format!("{} {}", command, path),
-        None => format!("xdg-open {}", path),
-    };
-
-    let crash = || {
-        exit::exit_with_error(
-            format!("error executing command: {}", &command).into(),
-        )
-    };
+    let filepath = format!("{}", file);
 
     if !file.is_empty() {
-        if atty::is(atty::Stream::Stdout) {
-            println!("{}", command);
-        }
-
-        let mut child = Command::new("sh")
-            .arg("-c")
-            .arg(&command)
-            .spawn()
-            .unwrap_or_else(|_| crash());
+        let mut child = cmd::spawn_opener(&category, &filepath);
 
         if category.terminal {
             child.wait()?;

@@ -2,9 +2,10 @@
 
 use std::io::Write;
 use std::path::PathBuf;
-use std::process::{Command, Stdio};
+use std::process::{Child, Command, Stdio};
 
-use crate::TResult;
+use crate::category::Category;
+use crate::{exit, TResult};
 
 pub fn user_select<'a>(list: &'a [String]) -> TResult<&'a str> {
     let mut finder = finder()?;
@@ -36,6 +37,43 @@ pub fn user_select<'a>(list: &'a [String]) -> TResult<&'a str> {
     }
     else {
         Err("".into())
+    }
+}
+
+pub fn spawn_opener(category: &Category, filepath: &str) -> Child {
+    let command = match &category.command {
+        Some(command) => format!("{} {}", command, filepath),
+        None => format!("xdg-open {}", filepath),
+    };
+
+    let crash = || {
+        exit::exit_with_error(
+            format!("error executing command: {}", &command).into(),
+        )
+    };
+
+    if atty::is(atty::Stream::Stdout) {
+        println!("{}", command);
+    }
+
+    if category.terminal
+        && !atty::is(atty::Stream::Stdin)
+        && !atty::is(atty::Stream::Stdout)
+    {
+        Command::new("st")
+            .arg("-e")
+            .arg("sh")
+            .arg("-c")
+            .arg(&command)
+            .spawn()
+            .unwrap_or_else(|_| crash())
+    }
+    else {
+        Command::new("sh")
+            .arg("-c")
+            .arg(&command)
+            .spawn()
+            .unwrap_or_else(|_| crash())
     }
 }
 

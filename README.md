@@ -32,11 +32,12 @@ Configuration is fairly straightforward:
 # categories are user-defined subcommands
 categories:
   # usage:
-  #   dirs: where should o look for files?
-  #   filetypes: which filetypes should be included? (default: ["*"])
-  #   ignored: which patterns should be ignored? (default: [])
+  #   dirs: look in which directories?
+  #   filetypes: which filetypes should be included?
+  #   include: limit the search to any specific patterns?
+  #   ignored: which patterns should be ignored (if any)?
   #   command: open files with which command? (default: xdg-open)
-  #   wait: wait for the command to finish? (default: false)
+  #   terminal: does the command run in the terminal? (default: false)
 
   # basic example (view images using xdg-open)
   images:
@@ -54,7 +55,7 @@ categories:
   edit:
     dirs: ["."]
     command: "nvim"
-    wait: true # nvim runs in the terminal, so we need to wait
+    terminal: true
 ```
 
 ## Development
@@ -64,6 +65,9 @@ over the next few months.
 
 Planned features are:
 
-- Flags to specify alternate config files.
-- Flags to override category options.
-- A `guicommand` option, for when the user isn't in a terminal.
+- More flags
+    - To specify alternate config files.
+    - To override category options.
+- Better integration with environment variables.
+- Better help (show user-defined subcommands in the menu).
+- `o` will use itself to open itself with a category.
