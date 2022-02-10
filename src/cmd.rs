@@ -7,7 +7,7 @@ use std::process::{Child, Command, Stdio};
 use crate::category::Category;
 use crate::{exit, TResult};
 
-pub fn user_select<'a>(list: &'a [String]) -> TResult<&'a str> {
+pub fn user_select(list: &[String]) -> TResult<&'_ str> {
     let mut finder = finder()?;
     let mut stdin = finder.stdin.take().expect("Failed to open stdin");
 
@@ -32,7 +32,7 @@ pub fn user_select<'a>(list: &'a [String]) -> TResult<&'a str> {
         .collect();
 
     if !selection.is_empty() {
-        let index = selection.split(" ").next().unwrap().parse::<usize>()?;
+        let index = selection.split(' ').next().unwrap().parse::<usize>()?;
         Ok(&list[index])
     }
     else {

@@ -32,19 +32,19 @@ impl Category {
     /// Returns the `find` command that should be run to list all files that
     /// match against this category.
     pub fn query(&self) -> String {
-        println!("find {} -type f", self.query_findargs());
         format!("find {} -type f", self.query_findargs())
     }
 
     /// Returns the full string of arguments that should be passed to the `find`
     /// command to match against this category.
     fn query_findargs(&self) -> String {
-        let mut out = Vec::new();
-        out.push(self.query_dirs());
-        out.push(self.query_include());
-        out.push(self.query_filetypes());
-        out.push(self.query_ignored());
-        out.join(" ")
+        vec![
+            self.query_dirs(),
+            self.query_include(),
+            self.query_filetypes(),
+            self.query_ignored(),
+        ]
+        .join(" ")
     }
 
     fn query_dirs(&self) -> String {

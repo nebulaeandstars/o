@@ -4,8 +4,6 @@ mod cmd;
 mod config;
 mod exit;
 
-use std::process::Command;
-
 type TResult<T> = Result<T, Box<dyn std::error::Error>>;
 
 fn main() {
@@ -48,11 +46,10 @@ fn run() -> TResult<()> {
     }
 
     let file = cmd::user_select(&files)?;
-    let file = file.split(" ").collect::<Vec<_>>().join(r"\ ");
-    let filepath = format!("{}", file);
+    let file = file.split(' ').collect::<Vec<_>>().join(r"\ ");
 
     if !file.is_empty() {
-        let mut child = cmd::spawn_opener(&category, &filepath);
+        let mut child = cmd::spawn_opener(category, &file);
 
         if category.terminal {
             child.wait()?;
