@@ -32,7 +32,7 @@ impl Category {
     /// Returns the `find` command that should be run to list all files that
     /// match against this category.
     pub fn query(&self) -> String {
-        format!("find {} -type f", self.query_findargs())
+        format!("find -L {} -type f", self.query_findargs())
     }
 
     /// Returns the full string of arguments that should be passed to the `find`
