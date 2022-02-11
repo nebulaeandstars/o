@@ -16,7 +16,9 @@ pub fn user_select(list: &[String]) -> TResult<&'_ str> {
         .map(|path| PathBuf::from(path).file_name().unwrap().to_owned())
         .enumerate()
         .rev()
-        .map(|(i, filename)| format!("{} {:#?}", i, filename))
+        .map(|(i, filename)| {
+            format!("{} ({})", filename.into_string().unwrap(), i)
+        })
         .collect::<Vec<_>>()
         .join("\n");
 
@@ -32,7 +34,12 @@ pub fn user_select(list: &[String]) -> TResult<&'_ str> {
         .collect();
 
     if !selection.is_empty() {
-        let index = selection.split(' ').next().unwrap().parse::<usize>()?;
+        let index = selection
+            .split(' ')
+            .next_back()
+            .map(|s| &s[1..(s.len() - 2)])
+            .unwrap()
+            .parse::<usize>()?;
         Ok(&list[index])
     }
     else {
