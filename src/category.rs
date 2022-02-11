@@ -19,6 +19,7 @@ pub struct Category {
     pub command: Option<String>,
 
     #[serde(default)]
+    #[serde(alias = "wait")]
     pub terminal: bool,
 }
 
