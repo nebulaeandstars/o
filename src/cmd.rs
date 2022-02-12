@@ -56,7 +56,7 @@ pub fn spawn_opener(category: &Category, filepath: &str) -> Child {
     let crash = || {
         exit::exit_with_error(
             format!("error executing command: {}", &command).into(),
-        )
+        );
     };
 
     if atty::is(atty::Stream::Stdout) {

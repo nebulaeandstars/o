@@ -1,19 +1,17 @@
 //! Helper functions for reading the config file.
 
 use std::collections::HashMap;
-use std::fs;
 use std::path::PathBuf;
+use std::{fmt, fs};
 
 use serde::Deserialize;
 
 use crate::category::Category;
-use crate::TResult;
 
 /// Find and deserialize the config file.
-pub fn read_config() -> TResult<Config> {
-    let config_path = config_file_path();
-    let yaml = fs::read_to_string(config_path)?;
-    let config = serde_yaml::from_str(&yaml)?;
+pub fn read_config() -> Result<Config, ConfigReadError> {
+    let config_file = fs::File::open(config_file_path())?;
+    let config = serde_yaml::from_reader(config_file)?;
     Ok(config)
 }
 
@@ -33,3 +31,33 @@ fn config_file_path() -> PathBuf {
 pub struct Config {
     pub categories: HashMap<String, Category>,
 }
+
+#[derive(Debug)]
+pub enum ConfigReadError {
+    IOError(std::io::Error),
+    ParseError(serde_yaml::Error),
+}
+
+impl From<std::io::Error> for ConfigReadError {
+    fn from(e: std::io::Error) -> Self {
+        Self::IOError(e)
+    }
+}
+
+impl From<serde_yaml::Error> for ConfigReadError {
+    fn from(e: serde_yaml::Error) -> Self {
+        Self::ParseError(e)
+    }
+}
+
+impl fmt::Display for ConfigReadError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        use ConfigReadError::*;
+        match self {
+            IOError(e) => write!(f, "config error: {}", e),
+            ParseError(e) => write!(f, "config error: {}", e),
+        }
+    }
+}
+
+impl std::error::Error for ConfigReadError {}

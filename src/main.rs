@@ -33,6 +33,8 @@ fn run() -> TResult<()> {
             )
         });
 
+    let foo = 3;
+
     if category.filetypes.is_empty() {
         category.filetypes.push(String::from("*"));
     }
