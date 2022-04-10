@@ -37,6 +37,7 @@ categories:
   #   include: limit the search to any specific patterns?
   #   ignored: which patterns should be ignored (if any)?
   #   command: open files with which command? (default: xdg-open)
+  #   full-path: select using the full path, or just the file name?
   #   terminal: does the command run in the terminal? (default: false)
 
   # basic example (view images using xdg-open)
@@ -55,6 +56,7 @@ categories:
   edit:
     dirs: ["."]
     command: "nvim"
+    full-path: true
     terminal: true
 ```
 

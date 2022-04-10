@@ -8,19 +8,31 @@ use crate::category::Category;
 use crate::exit;
 
 pub fn user_select(
-    list: &[String],
+    list: &[String], use_full_path: bool,
 ) -> Result<&'_ str, Box<dyn std::error::Error>> {
     let mut finder = finder();
     let mut stdin = finder.stdin.take().expect("Failed to open stdin");
 
+    let fmt_path = |path: &String| {
+        if use_full_path {
+            PathBuf::from(path).to_str().unwrap().to_owned()
+        }
+        else {
+            PathBuf::from(path)
+                .file_name()
+                .unwrap()
+                .to_owned()
+                .into_string()
+                .unwrap()
+        }
+    };
+
     let query = list
         .iter()
-        .map(|path| PathBuf::from(path).file_name().unwrap().to_owned())
+        .map(fmt_path)
         .enumerate()
         .rev()
-        .map(|(i, filename)| {
-            format!("{} ({})", filename.into_string().unwrap(), i)
-        })
+        .map(|(i, filename)| format!("{} ({})", filename, i))
         .collect::<Vec<_>>()
         .join("\n");
 

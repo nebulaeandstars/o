@@ -43,7 +43,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         files.sort();
     }
 
-    let file = cmd::user_select(&files)?;
+    let file = cmd::user_select(&files, category.use_full_path)?;
     let file = file.split(' ').collect::<Vec<_>>().join(r"\ ");
 
     if !file.is_empty() {
