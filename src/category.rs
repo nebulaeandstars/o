@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use crate::{cmd, TResult};
+use crate::cmd;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Category {
@@ -25,7 +25,7 @@ pub struct Category {
 
 impl Category {
     /// Returns a Vec with all files that match against this category.
-    pub fn matches(&self) -> TResult<Vec<String>> {
+    pub fn matches(&self) -> Result<Vec<String>, std::io::Error> {
         let result = cmd::exec(&self.query())?;
         Ok(result.lines().map(|s| s.to_string()).collect())
     }

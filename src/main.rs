@@ -4,13 +4,11 @@ mod cmd;
 mod config;
 mod exit;
 
-type TResult<T> = Result<T, Box<dyn std::error::Error>>;
-
 fn main() {
     run().unwrap_or_else(|e| exit::exit_with_error(e))
 }
 
-fn run() -> TResult<()> {
+fn run() -> Result<(), Box<dyn std::error::Error>> {
     let opts = cli::opts();
     let args = cli::args();
     let matches = opts.parse(args.args())?;
@@ -32,8 +30,6 @@ fn run() -> TResult<()> {
                 format!("unknown category: {}", chosen_category).into(),
             )
         });
-
-    let foo = 3;
 
     if category.filetypes.is_empty() {
         category.filetypes.push(String::from("*"));

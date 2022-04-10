@@ -5,10 +5,12 @@ use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 
 use crate::category::Category;
-use crate::{exit, TResult};
+use crate::exit;
 
-pub fn user_select(list: &[String]) -> TResult<&'_ str> {
-    let mut finder = finder()?;
+pub fn user_select(
+    list: &[String],
+) -> Result<&'_ str, Box<dyn std::error::Error>> {
+    let mut finder = finder();
     let mut stdin = finder.stdin.take().expect("Failed to open stdin");
 
     let query = list
@@ -84,7 +86,7 @@ pub fn spawn_opener(category: &Category, filepath: &str) -> Child {
     }
 }
 
-pub fn exec(command: &str) -> TResult<String> {
+pub fn exec(command: &str) -> Result<String, std::io::Error> {
     Ok(Command::new("sh")
         .arg("-c")
         .arg(command)
@@ -95,7 +97,7 @@ pub fn exec(command: &str) -> TResult<String> {
         .collect::<String>())
 }
 
-pub fn finder() -> TResult<std::process::Child> {
+pub fn finder() -> std::process::Child {
     // If in a tty, try to use fzf.
     if atty::is(atty::Stream::Stdin) && atty::is(atty::Stream::Stdout) {
         let result = Command::new("fzf")
@@ -104,15 +106,22 @@ pub fn finder() -> TResult<std::process::Child> {
             .spawn();
 
         if let Ok(child) = result {
-            return Ok(child);
+            return child;
         }
     }
 
+    let crash = |_| {
+        exit::exit_with_error(
+            "search error: could not spawn fzf or dmenu".into(),
+        );
+    };
+
     // If not in a tty, or if fzf didn't work, try to use dmenu.
-    Ok(Command::new("dmenu")
+    Command::new("dmenu")
         .arg("-l")
         .arg("20")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .spawn()?)
+        .spawn()
+        .unwrap_or_else(crash)
 }
